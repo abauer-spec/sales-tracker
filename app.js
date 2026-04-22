@@ -4,7 +4,8 @@
    Change API_BASE to your deployed Worker URL.
    For local dev: 'http://localhost:8787'
 ───────────────────────────────────────────────────────────────── */
-const API_BASE = 'http://localhost:8787'; // ← REPLACE WITH YOUR WORKER URL
+// const API_BASE = 'http://localhost:8787'; // ← REPLACE WITH YOUR WORKER URL
+const API_BASE = 'https://sales-tracker.bauer-spec.workers.dev';
 
 /* ── STATE ───────────────────────────────────────────────────── */
 let dashData     = null;
