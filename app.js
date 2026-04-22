@@ -47,7 +47,7 @@ async function api(path, method = 'GET', body = null) {
 }
 
 /* ── FORMAT ──────────────────────────────────────────────────── */
-const fmt = n => n.toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' ₽';
+const fmt = n => n.toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' $';
 
 /* ── DASHBOARD ───────────────────────────────────────────────── */
 async function loadDashboard(silent = false) {
