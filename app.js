@@ -188,12 +188,13 @@ function startPolling() {
 
 /* ── CELEBRATION ─────────────────────────────────────────────── */
 function triggerCelebration(tx) {
-   if (isAdmin) return;
+  if (isAdmin) return;
   const isMonster = dashData?.monster?.id === tx.agent_id && tx.today > 0;
   const overlay   = document.getElementById('cel-overlay');
   const popup     = document.getElementById('cel-popup');
   if (!overlay || !popup) return;
 
+  // Наполняем данными
   document.getElementById('cel-agent').textContent  = tx.agent_name;
   document.getElementById('cel-amount').textContent = fmt(tx.amount);
   document.getElementById('cel-emoji').textContent  = isMonster ? '👑' : '🎉';
@@ -202,20 +203,34 @@ function triggerCelebration(tx) {
   if (isMonster) {
     monLabel.style.display = 'block';
     popup.classList.add('monster');
-    spawnParticles(popup);
   } else {
     monLabel.style.display = 'none';
     popup.classList.remove('monster');
-    popup.querySelectorAll('.particle').forEach(p => p.remove());
   }
 
+  // Показываем попап
   overlay.classList.add('show');
+  
+  // Эффекты
   fireConfetti(isMonster);
-  playSound(isMonster);
+  playSound(); // Вызываем обновленную функцию звука
 
-   setTimeout(() => {
+  // АВТОЗАКРЫТИЕ через 6000 мс (6 секунд)
+  setTimeout(() => {
     closePopup(null, true);
-  }, 3200);
+  }, 6000);
+}
+
+function playSound() {
+  // Прямой путь к файлу в твоем репозитории
+  const audio = new Audio('audio/audio.mp3');
+  
+  audio.volume = 0.7; // Одинаковая громкость
+  audio.playbackRate = 1.0;
+
+  audio.play().catch(err => {
+    console.error("Ошибка аудио. Проверь, лежит ли файл в папке audio/:", err);
+  });
 }
 
 function closePopup(e, force = false) {
