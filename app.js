@@ -212,6 +212,10 @@ function triggerCelebration(tx) {
   overlay.classList.add('show');
   fireConfetti(isMonster);
   playSound(isMonster);
+
+   setTimeout(() => {
+    closePopup(null, true);
+  }, 3200);
 }
 
 function closePopup(e, force = false) {
