@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sales Tracker — Дашборд</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+
+<body data-page="dashboard">
+
+<!-- ══ TOP BAR ═══════════════════════════════════════════════════ -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <h1>SalesTrack</h1>
+    <div><span class="topbar-date" id="clock-date"></span></div>
+  </div>
+  <div class="topbar-right">
+    <span class="live-dot"></span>
+    <span class="topbar-clock" id="clock-time">--:--:--</span>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD CONTENT ═════════════════════════════════════════ -->
+<div class="main-full">
+
+  <!-- Stat cards -->
+  <div class="cards-row" style="margin-top: 8px;">
+    <div class="card">
+      <div class="card-label">Сегодня</div>
+      <div class="card-value green" id="stat-today">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">За месяц</div>
+      <div class="card-value blue" id="stat-month">—</div>
+    </div>
+    <div class="card monster" id="monster-card">
+      <span class="monster-icon">🔥</span>
+      <div class="card-label">Daily Monster</div>
+      <div class="card-value" id="stat-monster">—</div>
+      <div class="monster-name" id="stat-monster-name">нет данных</div>
+    </div>
+  </div>
+
+  <!-- Goal tracker -->
+  <div class="goal-block">
+    <div class="goal-header">
+      <span class="goal-title">🎯 Цель на сегодня</span>
+      <span id="dash-date-badge" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text3)"></span>
+    </div>
+    <div class="goal-stats">
+      <div>
+        <div class="goal-stat-label">Цель</div>
+        <div class="goal-stat-val text-muted mono" id="goal-target">не задана</div>
+      </div>
+      <div>
+        <div class="goal-stat-label">Осталось</div>
+        <div class="goal-stat-val mono" id="goal-left" style="color:var(--accent2)">—</div>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="goal-bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Agents table -->
+  <div class="table-wrap">
+    <div class="table-header-bar">
+      <h3>Агенты</h3>
+      <span style="font-size:.75rem;color:var(--text3);font-family:'JetBrains Mono',monospace" id="sort-hint"></span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ФИО</th>
+          <th class="sorted" id="th-today" onclick="toggleSort('today')">
+            Сегодня <span class="sort-icon" id="si-today">▼</span>
+          </th>
+          <th id="th-month" onclick="toggleSort('month')">
+            Месяц <span class="sort-icon" id="si-month">▼</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="agents-tbody">
+        <tr class="loading-row"><td colspan="3"><div class="spinner"></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /main-full -->
+
+<!-- ══ CELEBRATION POPUP ══════════════════════════════════════════ -->
+<div class="overlay" id="cel-overlay" onclick="closePopup(event)">
+  <div class="popup" id="cel-popup">
+    <button class="popup-close" onclick="closePopup(null,true)">✕</button>
+    <span class="popup-emoji" id="cel-emoji">🎉</span>
+    <div class="popup-monster-label" id="cel-monster-label" style="display:none">🔥 DAILY MONSTER! 🔥</div>
+    <div class="popup-title" id="cel-title">Продажа добавлена!</div>
+    <div class="popup-agent" id="cel-agent"></div>
+    <div class="popup-amount" id="cel-amount"></div>
+    <button class="btn btn-ghost" onclick="closePopup(null,true)" style="margin-top:4px">Закрыть</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

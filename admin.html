@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sales Tracker — Администрация</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+
+<body data-page="admin">
+<div class="app">
+
+  <!-- ══ SIDEBAR ════════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>SalesTrack</h1>
+      <span>ADMIN</span>
+    </div>
+    <nav>
+      <a class="nav-item" href="index.html">
+        <span class="nav-icon">📊</span> Дашборд
+      </a>
+      <a class="nav-item active" href="admin.html">
+        <span class="nav-icon">⚙️</span> Администрация
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="clock">
+        <span class="live-dot"></span>
+        <span id="s-clock-time">--:--:--</span>
+      </div>
+      <div style="font-size:.68rem;color:var(--text3);margin-top:4px;font-family:'JetBrains Mono',monospace" id="s-clock-date"></div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ═══════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <div class="page-title">
+      Администрация <span class="badge">ADMIN</span>
+    </div>
+
+    <!-- Add agent + Add sale -->
+    <div class="admin-grid">
+      <div class="panel">
+        <div class="panel-header"><h3>Новый агент</h3></div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">ФИО агента</label>
+            <input type="text" id="new-agent-name" class="form-control" placeholder="Введите ФИО..."/>
+          </div>
+          <button class="btn btn-primary" onclick="createAgent()">✚ Добавить агента</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h3>Добавить продажу</h3></div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Агент</label>
+            <select id="sale-agent" class="form-control">
+              <option value="">Выберите агента...</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Сумма (₽)</label>
+              <input type="number" id="sale-amount" class="form-control" placeholder="0" min="1"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Дата</label>
+              <input type="date" id="sale-date" class="form-control"/>
+            </div>
+          </div>
+          <button class="btn btn-success" onclick="createSale()">💰 Добавить продажу</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agents list -->
+    <div class="panel mt-4">
+      <div class="panel-header"><h3>Список агентов</h3></div>
+      <div class="panel-body" id="agents-admin-list">
+        <div style="color:var(--text3);font-size:.85rem">Загрузка...</div>
+      </div>
+    </div>
+
+    <!-- Goal setting -->
+    <div class="panel mt-4">
+      <div class="panel-header"><h3>🎯 Цель на сегодня</h3></div>
+      <div class="panel-body">
+        <p style="font-size:.82rem;color:var(--text2);margin-bottom:16px">
+          Новое значение полностью заменяет предыдущую цель.
+        </p>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Сумма цели (₽)</label>
+            <input type="number" id="goal-input" class="form-control" placeholder="например 500000" min="0" step="1000"/>
+          </div>
+          <div style="display:flex;align-items:flex-end;padding-bottom:16px">
+            <button class="btn btn-primary" onclick="setGoal()">💾 Сохранить цель</button>
+          </div>
+        </div>
+        <div id="goal-current-display" style="font-size:.82rem;color:var(--text3);font-family:'JetBrains Mono',monospace"></div>
+      </div>
+    </div>
+
+    <!-- Last transactions -->
+    <div class="panel mt-4">
+      <div class="panel-header"><h3>Последние транзакции</h3></div>
+      <div class="panel-body" id="admin-tx-list">
+        <div style="color:var(--text3);font-size:.85rem">Загрузка...</div>
+      </div>
+      <div style="padding:0 20px 16px">
+        <button class="btn btn-ghost btn-sm" onclick="loadAllTx()">Загрузить все</button>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="danger-zone">
+      <h3>⚠ Опасная зона</h3>
+      <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px">
+        Сброс данных необратим. Используйте с осторожностью.
+      </p>
+      <div class="danger-btns">
+        <button class="btn btn-danger" onclick="confirmReset('today')">🗑 Сбросить сегодня</button>
+        <button class="btn btn-danger" onclick="confirmReset('month')">🗑 Сбросить месяц</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ CELEBRATION POPUP ══════════════════════════════════════════ -->
+<div class="overlay" id="cel-overlay" onclick="closePopup(event)">
+  <div class="popup" id="cel-popup">
+    <button class="popup-close" onclick="closePopup(null,true)">✕</button>
+    <span class="popup-emoji" id="cel-emoji">🎉</span>
+    <div class="popup-monster-label" id="cel-monster-label" style="display:none">🔥 DAILY MONSTER! 🔥</div>
+    <div class="popup-title" id="cel-title">Продажа добавлена!</div>
+    <div class="popup-agent" id="cel-agent"></div>
+    <div class="popup-amount" id="cel-amount"></div>
+    <button class="btn btn-ghost" onclick="closePopup(null,true)" style="margin-top:4px">Закрыть</button>
+  </div>
+</div>
+
+<!-- Edit transaction modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h3>✏ Редактировать транзакцию</h3>
+    <input type="hidden" id="edit-tx-id"/>
+    <div class="form-group">
+      <label class="form-label">Сумма (₽)</label>
+      <input type="number" id="edit-amount" class="form-control" min="1"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Дата</label>
+      <input type="date" id="edit-date" class="form-control"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="saveEditTx()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
