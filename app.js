@@ -463,6 +463,7 @@ async function confirmReset(type) {
 
 /* ── TOAST ───────────────────────────────────────────────────── */
 function toast(msg, type = 'info') {
+   if (document.body.dataset.page === 'admin') return;
   const el = document.createElement('div');
   el.className = `toast ${type}`;
   el.innerHTML = `<span class="toast-icon">${type==='success'?'✓':type==='error'?'✕':'ℹ'}</span><span>${escHtml(msg)}</span>`;
