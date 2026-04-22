@@ -229,66 +229,75 @@ function fireConfetti(isMonster) {
 }
 
 /* ── SOUND ───────────────────────────────────────────────────── */
-function playSound(isMonster) {
-  try {
-    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
-    const gain = ctx.createGain();
-    gain.connect(ctx.destination);
+function playSound() {
+  const audio = new Audio('audio/audio.mp3');
+  audio.volume = 0.7;
+  audio.playbackRate = 1.0;
 
-    const bufLen = ctx.sampleRate * 1.2;
-    const buf    = ctx.createBuffer(1, bufLen, ctx.sampleRate);
-    const data   = buf.getChannelData(0);
-    for (let i = 0; i < bufLen; i++) {
-      const t   = i / ctx.sampleRate;
-      const env = Math.sin(Math.PI * t / 1.2) * (1 - t / 1.5);
-      data[i]   = (Math.random() * 2 - 1) * env * .7;
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-
-    const bp = ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.frequency.value = isMonster ? 2200 : 1600;
-    bp.Q.value = .6;
-    src.connect(bp);
-    bp.connect(gain);
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(.8, ctx.currentTime + .08);
-    gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + 1.1);
-
-    if (isMonster) {
-      ['C5','E5','G5','C6'].forEach((note, i) => {
-        const osc = ctx.createOscillator();
-        const g2  = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = noteToHz(note);
-        osc.connect(g2); g2.connect(ctx.destination);
-        g2.gain.setValueAtTime(0, ctx.currentTime + i * .06);
-        g2.gain.linearRampToValueAtTime(.18, ctx.currentTime + i * .06 + .04);
-        g2.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + i * .06 + .8);
-        osc.start(ctx.currentTime + i * .06);
-        osc.stop(ctx.currentTime + i * .06 + .9);
-      });
-    } else {
-      const osc = ctx.createOscillator();
-      const g2  = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = 880;
-      osc.connect(g2); g2.connect(ctx.destination);
-      g2.gain.setValueAtTime(0, ctx.currentTime);
-      g2.gain.linearRampToValueAtTime(.22, ctx.currentTime + .03);
-      g2.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .5);
-      osc.start(); osc.stop(ctx.currentTime + .55);
-    }
-
-    src.start(); src.stop(ctx.currentTime + 1.2);
-    setTimeout(() => ctx.close(), 1500);
-  } catch(e) { /* AudioContext blocked */ }
+  audio.play().catch(err => {
+    console.warn("Воспроизведение звука заблокировано или отложено:", err);
+  });
 }
+// function playSound(isMonster) {
+//   try {
+//     const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+//     const gain = ctx.createGain();
+//     gain.connect(ctx.destination);
 
-function noteToHz(note) {
-  return { C4:261.63,E4:329.63,G4:392,C5:523.25,E5:659.25,G5:783.99,C6:1046.5 }[note] || 440;
-}
+//     const bufLen = ctx.sampleRate * 1.2;
+//     const buf    = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+//     const data   = buf.getChannelData(0);
+//     for (let i = 0; i < bufLen; i++) {
+//       const t   = i / ctx.sampleRate;
+//       const env = Math.sin(Math.PI * t / 1.2) * (1 - t / 1.5);
+//       data[i]   = (Math.random() * 2 - 1) * env * .7;
+//     }
+//     const src = ctx.createBufferSource();
+//     src.buffer = buf;
+
+//     const bp = ctx.createBiquadFilter();
+//     bp.type = 'bandpass';
+//     bp.frequency.value = isMonster ? 2200 : 1600;
+//     bp.Q.value = .6;
+//     src.connect(bp);
+//     bp.connect(gain);
+//     gain.gain.setValueAtTime(0, ctx.currentTime);
+//     gain.gain.linearRampToValueAtTime(.8, ctx.currentTime + .08);
+//     gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + 1.1);
+
+//     if (isMonster) {
+//       ['C5','E5','G5','C6'].forEach((note, i) => {
+//         const osc = ctx.createOscillator();
+//         const g2  = ctx.createGain();
+//         osc.type = 'sine';
+//         osc.frequency.value = noteToHz(note);
+//         osc.connect(g2); g2.connect(ctx.destination);
+//         g2.gain.setValueAtTime(0, ctx.currentTime + i * .06);
+//         g2.gain.linearRampToValueAtTime(.18, ctx.currentTime + i * .06 + .04);
+//         g2.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + i * .06 + .8);
+//         osc.start(ctx.currentTime + i * .06);
+//         osc.stop(ctx.currentTime + i * .06 + .9);
+//       });
+//     } else {
+//       const osc = ctx.createOscillator();
+//       const g2  = ctx.createGain();
+//       osc.type = 'sine';
+//       osc.frequency.value = 880;
+//       osc.connect(g2); g2.connect(ctx.destination);
+//       g2.gain.setValueAtTime(0, ctx.currentTime);
+//       g2.gain.linearRampToValueAtTime(.22, ctx.currentTime + .03);
+//       g2.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .5);
+//       osc.start(); osc.stop(ctx.currentTime + .55);
+//     }
+
+//     src.start(); src.stop(ctx.currentTime + 1.2);
+//     setTimeout(() => ctx.close(), 1500);
+//   } catch(e) { /* AudioContext blocked */ }
+// }
+
+// function noteToHz(note) {
+//   return { C4:261.63,E4:329.63,G4:392,C5:523.25,E5:659.25,G5:783.99,C6:1046.5 }[note] || 440;
+// }
 
 /* ── GOLDEN PARTICLES ────────────────────────────────────────── */
 function spawnParticles(popup) {
