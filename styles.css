@@ -137,7 +137,7 @@ body {
 /* Dashboard: full width, no sidebar */
 .main-full {
   width: 100%;
-  padding: 32px 40px;
+  padding: 12px 40px;
   min-width: 0;
 }
 
@@ -217,14 +217,14 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
-  margin-bottom: 28px;
+  margin-bottom: 15px;
 }
 
 .card {
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px 22px;
+  padding: 12px 22px;
   transition: var(--transition);
   position: relative;
   overflow: hidden;
@@ -298,8 +298,8 @@ body {
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 22px 26px;
-  margin-bottom: 28px;
+  padding: 12px 26px;
+  margin-bottom: 15px;
 }
 .goal-header {
   display: flex;
