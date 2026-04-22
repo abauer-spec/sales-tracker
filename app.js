@@ -14,6 +14,7 @@ let sortField    = 'today';
 let goalValue    = parseInt(localStorage.getItem('salesGoal') || '0', 10);
 let seenTxIds    = new Set(JSON.parse(localStorage.getItem('seenTxIds') || '[]'));
 let pollingTimer = null;
+let isAdmin = false;
 
 /* ── CLOCK ───────────────────────────────────────────────────── */
 function startClock() {
@@ -187,6 +188,7 @@ function startPolling() {
 
 /* ── CELEBRATION ─────────────────────────────────────────────── */
 function triggerCelebration(tx) {
+   if (isAdmin) return;
   const isMonster = dashData?.monster?.id === tx.agent_id && tx.today > 0;
   const overlay   = document.getElementById('cel-overlay');
   const popup     = document.getElementById('cel-popup');
@@ -463,15 +465,21 @@ async function confirmReset(type) {
 
 /* ── TOAST ───────────────────────────────────────────────────── */
 function toast(msg, type = 'info') {
-   if (document.body.dataset.page === 'admin') return;
+  if (isAdmin) return; // Используем глобальную переменную
+
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
   const el = document.createElement('div');
   el.className = `toast ${type}`;
   el.innerHTML = `<span class="toast-icon">${type==='success'?'✓':type==='error'?'✕':'ℹ'}</span><span>${escHtml(msg)}</span>`;
-  document.getElementById('toast-container').appendChild(el);
+  container.appendChild(el);
+
+  // Исчезновение ровно через 4 секунды
   setTimeout(() => {
     el.style.animation = 'toast-out .3s ease forwards';
     setTimeout(() => el.remove(), 300);
-  }, 3200);
+  }, 4000); 
 }
 
 /* ── UTILS ───────────────────────────────────────────────────── */
@@ -483,16 +491,15 @@ function todayStr()  { return new Date().toISOString().slice(0, 10); }
 document.addEventListener('DOMContentLoaded', async () => {
   startClock();
 
-  const isAdmin = document.body.dataset.page === 'admin';
+  // Устанавливаем глобальное значение
+  isAdmin = document.body.dataset.page === 'admin';
 
   if (isAdmin) {
-    // Admin page: load date default + admin data
     const saleDateEl = document.getElementById('sale-date');
     if (saleDateEl) saleDateEl.value = todayStr();
-    await loadDashboard(true); // need dashData for monster detection
+    await loadDashboard(true); 
     await loadAdminData();
   } else {
-    // Dashboard page: just load data and start polling
     await loadDashboard();
     startPolling();
   }
