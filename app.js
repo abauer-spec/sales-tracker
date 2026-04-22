@@ -465,21 +465,35 @@ async function confirmReset(type) {
 
 /* ── TOAST ───────────────────────────────────────────────────── */
 function toast(msg, type = 'info') {
-  if (isAdmin) return; // Используем глобальную переменную
+  if (isAdmin) return;
 
   const container = document.getElementById('toast-container');
   if (!container) return;
 
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.innerHTML = `<span class="toast-icon">${type==='success'?'✓':type==='error'?'✕':'ℹ'}</span><span>${escHtml(msg)}</span>`;
+  // Добавим инлайновый стиль для надежности, если CSS не подгрузился
+  el.style.marginBottom = '8px';
+  el.innerHTML = `
+    <span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}</span>
+    <span>${escHtml(msg)}</span>
+  `;
+  
   container.appendChild(el);
 
-  // Исчезновение ровно через 4 секунды
+  // 1. Пытаемся запустить анимацию через 3.5 секунды
   setTimeout(() => {
-    el.style.animation = 'toast-out .3s ease forwards';
-    setTimeout(() => el.remove(), 300);
-  }, 4000); 
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(20px)';
+    el.style.transition = 'all 0.5s ease';
+  }, 3500);
+
+  // 2. ЖЕСТКО удаляем элемент из DOM через 4 секунды (гарантия)
+  setTimeout(() => {
+    if (el && el.parentNode) {
+      el.remove();
+    }
+  }, 4000);
 }
 
 /* ── UTILS ───────────────────────────────────────────────────── */
