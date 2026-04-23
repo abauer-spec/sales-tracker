@@ -1,6 +1,5 @@
 /**
  * Sales Tracking System — Cloudflare Worker
- * D1 binding name: DB  (configure in wrangler.toml)
  */
 
 const CORS = {
@@ -20,8 +19,6 @@ function err(msg, status = 400) {
   return json({ error: msg }, status);
 }
 
-// ── Router ────────────────────────────────────────────────────────────────────
-
 export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
@@ -31,17 +28,31 @@ export default {
     const method = request.method;
 
     try {
-      // ── Agents ────────────────────────────────────────────────────────────
+      // ─── GOAL (НОВОЕ: Сохранение цели в БД) ──────────────────────
 
-      // GET /api/agents
+      if (method === 'GET' && path === '/api/goal') {
+        const result = await env.DB.prepare(
+          "SELECT value FROM settings WHERE key = 'daily_goal'"
+        ).first();
+        return json({ goal: result ? parseInt(result.value) : 0 });
+      }
+
+      if (method === 'POST' && path === '/api/goal') {
+        const { goal } = await request.json();
+        await env.DB.prepare(
+          "INSERT INTO settings (key, value) VALUES ('daily_goal', ?) " +
+          "ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+        ).bind(goal.toString()).run();
+        return json({ ok: true });
+      }
+
+      // ─── AGENTS ──────────────────────────────────────────────────
+
       if (method === 'GET' && path === '/api/agents') {
-        const { results } = await env.DB.prepare(
-          'SELECT * FROM agents ORDER BY name'
-        ).all();
+        const { results } = await env.DB.prepare('SELECT * FROM agents ORDER BY name').all();
         return json(results);
       }
 
-      // POST /api/agents  { name }
       if (method === 'POST' && path === '/api/agents') {
         const { name } = await request.json();
         if (!name?.trim()) return err('name required');
@@ -51,16 +62,14 @@ export default {
         return json(r, 201);
       }
 
-      // DELETE /api/agents/:id
       const agentDel = path.match(/^\/api\/agents\/(\d+)$/);
       if (method === 'DELETE' && agentDel) {
         await env.DB.prepare('DELETE FROM agents WHERE id=?').bind(+agentDel[1]).run();
         return json({ ok: true });
       }
 
-      // ── Transactions ──────────────────────────────────────────────────────
+      // ─── TRANSACTIONS ────────────────────────────────────────────
 
-      // GET /api/transactions?date=YYYY-MM-DD
       if (method === 'GET' && path === '/api/transactions') {
         const date = url.searchParams.get('date') || todayStr();
         const { results } = await env.DB.prepare(`
@@ -73,7 +82,6 @@ export default {
         return json(results);
       }
 
-      // GET /api/transactions/all  — last 50 across all dates
       if (method === 'GET' && path === '/api/transactions/all') {
         const { results } = await env.DB.prepare(`
           SELECT t.*, a.name AS agent_name
@@ -84,7 +92,6 @@ export default {
         return json(results);
       }
 
-      // POST /api/transactions  { agent_id, amount, date? }
       if (method === 'POST' && path === '/api/transactions') {
         const { agent_id, amount, date } = await request.json();
         if (!agent_id || !amount) return err('agent_id and amount required');
@@ -92,12 +99,10 @@ export default {
         const r = await env.DB.prepare(
           'INSERT INTO transactions (agent_id, amount, date) VALUES (?,?,?) RETURNING *'
         ).bind(+agent_id, +amount, d).first();
-        // attach agent name
         const agent = await env.DB.prepare('SELECT name FROM agents WHERE id=?').bind(+agent_id).first();
         return json({ ...r, agent_name: agent?.name }, 201);
       }
 
-      // PUT /api/transactions/:id  { amount, date? }
       const txUpdate = path.match(/^\/api\/transactions\/(\d+)$/);
       if (method === 'PUT' && txUpdate) {
         const { amount, date } = await request.json();
@@ -110,20 +115,17 @@ export default {
         return json(r);
       }
 
-      // DELETE /api/transactions/:id
       if (method === 'DELETE' && txUpdate) {
         await env.DB.prepare('DELETE FROM transactions WHERE id=?').bind(+txUpdate[1]).run();
         return json({ ok: true });
       }
 
-      // ── Dashboard ─────────────────────────────────────────────────────────
+      // ─── DASHBOARD ───────────────────────────────────────────────
 
-      // GET /api/dashboard
       if (method === 'GET' && path === '/api/dashboard') {
         const today = todayStr();
         const monthStart = today.slice(0, 8) + '01';
 
-        // Today totals per agent
         const { results: todayRows } = await env.DB.prepare(`
           SELECT a.id, a.name,
             COALESCE(SUM(CASE WHEN t.date=? THEN t.amount END), 0) AS today,
@@ -136,18 +138,19 @@ export default {
         const totalToday = todayRows.reduce((s, r) => s + r.today, 0);
         const totalMonth = todayRows.reduce((s, r) => s + r.month, 0);
 
-        // Daily monster = highest today
         const monster = todayRows.reduce(
           (best, r) => (r.today > (best?.today ?? -1) ? r : best),
           null
         );
 
-        // Last 3 transactions
         const { results: lastTx } = await env.DB.prepare(`
           SELECT t.*, a.name AS agent_name
           FROM transactions t JOIN agents a ON a.id=t.agent_id
           ORDER BY t.created_at DESC LIMIT 3
         `).all();
+
+        // Получаем цель из настроек
+        const goalData = await env.DB.prepare("SELECT value FROM settings WHERE key = 'daily_goal'").first();
 
         return json({
           today: totalToday,
@@ -156,18 +159,17 @@ export default {
           agents: todayRows,
           lastTransactions: lastTx,
           serverTime: today,
+          goal: goalData ? parseInt(goalData.value) : 0 // Отправляем цель в дашборд
         });
       }
 
-      // ── Reset ─────────────────────────────────────────────────────────────
+      // ─── RESET ───────────────────────────────────────────────────
 
-      // POST /api/reset/today
       if (method === 'POST' && path === '/api/reset/today') {
         await env.DB.prepare("DELETE FROM transactions WHERE date=?").bind(todayStr()).run();
         return json({ ok: true });
       }
 
-      // POST /api/reset/month
       if (method === 'POST' && path === '/api/reset/month') {
         const monthStart = todayStr().slice(0, 8) + '01';
         await env.DB.prepare("DELETE FROM transactions WHERE date>=?").bind(monthStart).run();
