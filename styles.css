@@ -686,16 +686,27 @@ select.form-control { cursor: pointer; }
   50%      { opacity: .7; text-shadow: 0 0 40px rgba(245,158,11,1); }
 }
 
-.popup-agent  { font-size: 1rem; color: var(--text2); margin-bottom: 6px; }
+.popup-agent  { 
+   font-size: 1.6rem !important; 
+   font-weight: 600; 
+   margin-bottom: 10px; 
+   color: var(--text); 
+}
 .popup-amount {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 3rem;
-  letter-spacing: .04em;
+  font-size: 4.5rem !important;
+  letter-spacing: 0.05em;
   color: var(--green);
   line-height: 1;
   margin-bottom: 20px;
+   margin-top: 5px;
+   text-shadow: 0 0 20px rgba(34, 211, 160, 0.3);
 }
-.popup.monster .popup-amount { color: var(--gold2); }
+.popup.monster .popup-amount { 
+  font-size: 5.5rem !important;
+  color: var(--gold2);
+  text-shadow: 0 0 30px rgba(245, 158, 11, 0.5); 
+}
 
 .popup-close {
   position: absolute;
