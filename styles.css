@@ -621,13 +621,14 @@ select.form-control { cursor: pointer; }
 
 .popup {
   background: var(--bg3);
-  border: 1px solid var(--border2);
-  border-radius: 20px;
-  padding: 40px 48px;
+  border: 2px solid var(--border2);
+  border-radius: 40px;
+  padding: 5vh 5vw;
   text-align: center;
   position: relative;
-  max-width: 420px;
-  width: 90%;
+  max-width: 1200px;
+  min-width: 320px;
+  width: 70vw;
   transform: scale(.7) translateY(30px);
   opacity: 0;
   transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .3s ease;
@@ -663,7 +664,12 @@ select.form-control { cursor: pointer; }
   animation: shimmer-border 1.5s linear infinite;
 }
 
-.popup-emoji  { font-size: 3.5rem; margin-bottom: 16px; display: block; line-height: 1; }
+.popup-emoji  { 
+   font-size: 10vh !important; 
+   margin-bottom: 2vh; 
+   display: block; 
+   line-height: 1; 
+}
 .popup-title  {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 1.8rem;
@@ -687,14 +693,14 @@ select.form-control { cursor: pointer; }
 }
 
 .popup-agent  { 
-   font-size: 1.6rem !important; 
+   font-size: 4vh !important;
    font-weight: 600; 
-   margin-bottom: 10px; 
-   color: var(--text); 
+   margin-bottom: 1vh;
+   color: var(--text2); 
 }
 .popup-amount {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 4.5rem !important;
+  font-size: 15vh !important;
   letter-spacing: 0.05em;
   color: var(--green);
   line-height: 1;
