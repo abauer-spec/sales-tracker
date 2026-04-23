@@ -136,16 +136,30 @@ function updateSortUI() {
 }
 
 /* ── GOAL ────────────────────────────────────────────────────── */
-function setGoal() {
+async function setGoal() {
   const input = document.getElementById('goal-input');
   const v = parseInt(input?.value, 10);
-  if (!v || v < 0) return toast('Введите корректную цель', 'error');
-  goalValue = v;
-  localStorage.setItem('salesGoal', v);
-  if (input) input.value = '';
-  updateGoal(dashData?.today || 0);
-  showCurrentGoalInAdmin();
-  toast('Цель обновлена: ' + fmt(v), 'success');
+  
+  // Проверка на валидность числа
+  if (isNaN(v) || v < 0) return toast('Введите корректную цель', 'error');
+
+  try {
+    // 1. Отправляем цель в базу данных D1 через API воркера
+    await api('/api/goal', 'POST', { goal: v });
+    
+    // 2. Обновляем глобальную переменную в приложении
+    goalValue = v;
+    
+    // 3. Синхронизируем интерфейс
+    if (input) input.value = '';
+    updateGoal(dashData?.today || 0);
+    showCurrentGoalInAdmin();
+    
+    toast('Цель сохранена в базе Cloudflare: ' + fmt(v), 'success');
+  } catch (e) {
+    console.error("Ошибка сохранения цели:", e);
+    toast('Ошибка сохранения: ' + e.message, 'error');
+  }
 }
 
 function showCurrentGoalInAdmin() {
@@ -159,12 +173,15 @@ function updateGoal(collected) {
   const targetEl = document.getElementById('goal-target');
   const leftEl   = document.getElementById('goal-left');
   const bar      = document.getElementById('goal-bar');
+  
   if (targetEl) targetEl.textContent = target ? fmt(target) : 'не задана';
+  
   const left = Math.max(0, target - collected);
   if (leftEl) {
     leftEl.textContent  = target ? (left === 0 ? '✓ Цель выполнена!' : fmt(left)) : '—';
     leftEl.style.color  = left === 0 && target ? 'var(--green)' : target ? 'var(--accent2)' : 'var(--text3)';
   }
+  
   const pct = target ? Math.min(100, (collected / target) * 100) : 0;
   if (bar) {
     bar.style.width = pct + '%';
