@@ -57,6 +57,12 @@ async function loadDashboard(silent = false) {
     const isFirstLoad = dashData === null;
     dashData = data;
 
+    // ─── ОБНОВЛЕНИЕ ЦЕЛИ ИЗ БАЗЫ ДАННЫХ (НОВОЕ) ───
+    if (data.goal !== undefined) {
+      goalValue = data.goal; // Устанавливаем глобальную переменную цели
+    }
+    // ──────────────────────────────────────────────
+
     const todayEl = document.getElementById('stat-today');
     const monthEl = document.getElementById('stat-month');
     const badgeEl = document.getElementById('dash-date-badge');
@@ -80,7 +86,11 @@ async function loadDashboard(silent = false) {
     sortField = hasToday ? 'today' : 'month';
     renderTable(data.agents);
     updateSortUI();
-    updateGoal(data.today || 0);
+    
+    // updateGoal теперь будет использовать актуальное значение goalValue, 
+    // которое мы обновили выше из data.goal
+    updateGoal(data.today || 0); 
+    
     checkNewTransactions(data.lastTransactions || [], isFirstLoad);
   } catch (e) {
     if (!silent) toast('Ошибка загрузки данных', 'error');
