@@ -693,7 +693,7 @@ select.form-control { cursor: pointer; }
 }
 
 .popup-agent  { 
-   font-size: 4vh !important;
+   font-size: 8vh !important;
    font-weight: 600; 
    margin-bottom: 1vh;
    color: var(--text2); 
